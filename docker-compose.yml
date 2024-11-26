@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  flask-app:
+    build:
+      context: .
+    container_name: flask_whitelist
+    ports:
+      - "5000:5000" 
+    volumes:
+      - /data/coolify/services/i0480osk0ggo0kkg884ow4oc/minecraft-data:/data  
+    restart: unless-stopped
