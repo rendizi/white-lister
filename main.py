@@ -1,6 +1,7 @@
 import os
 import json
 from flask import Flask, request, jsonify
+import subprocess
 
 app = Flask(__name__)
 
@@ -15,27 +16,20 @@ def add_to_whitelist():
         if not username:
             return jsonify({"error": "Username is required"}), 400
 
-        if os.path.exists(WHITELIST_FILE):
-            with open(WHITELIST_FILE, 'r') as file:
-                whitelist = json.load(file)
-        else:
-            whitelist = []
+        command = [
+            "docker", "exec", "-it", "mc-i0480osk0ggo0kkg884ow4oc",
+            "rcon-cli", "whitelist", "add", username
+        ]
+        result = subprocess.run(command, capture_output=True, text=True)
 
-        if any(entry['name'] == username for entry in whitelist):
-            return jsonify({"message": f"{username} is already whitelisted"}), 200
+        if result.returncode != 0:
+            return jsonify({"error": result.stderr.strip()}), 500
 
-        new_entry = {"uuid": "unknown", "name": username}
-        whitelist.append(new_entry)
+        return jsonify({
+            "message": f"{username} added to the whitelist",
+            "whitelist": True
+        }), 200
 
-        with open(WHITELIST_FILE, 'w') as file:
-            json.dump(whitelist, file, indent=4)
-
-        os.system("docker exec -it mc-i0480osk0ggo0kkg884ow4oc rcon-cli whitelist reload")
-
-        return jsonify({"message": f"{username} added to the whitelist"}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
