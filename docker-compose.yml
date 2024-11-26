@@ -9,4 +9,5 @@ services:
       - "5000:5000" 
     volumes:
       - /data/coolify/services/i0480osk0ggo0kkg884ow4oc/minecraft-data:/data  
+      - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
